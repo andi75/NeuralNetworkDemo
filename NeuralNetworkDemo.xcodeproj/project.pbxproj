@@ -12,6 +12,11 @@
 		E121509C1D4F893800F545B6 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = E121509A1D4F893800F545B6 /* Main.storyboard */; };
 		E121509E1D4F893800F545B6 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = E121509D1D4F893800F545B6 /* Assets.xcassets */; };
 		E12150A11D4F893800F545B6 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = E121509F1D4F893800F545B6 /* LaunchScreen.storyboard */; };
+		E12150A91D4F896200F545B6 /* Neuron.swift in Sources */ = {isa = PBXBuildFile; fileRef = E12150A81D4F896200F545B6 /* Neuron.swift */; };
+		E12150AB1D4F89D700F545B6 /* Layer.swift in Sources */ = {isa = PBXBuildFile; fileRef = E12150AA1D4F89D700F545B6 /* Layer.swift */; };
+		E12150AD1D4F8A8700F545B6 /* NeuralNet.swift in Sources */ = {isa = PBXBuildFile; fileRef = E12150AC1D4F8A8700F545B6 /* NeuralNet.swift */; };
+		E12150AF1D4F9D5800F545B6 /* NeuralNetTraining.swift in Sources */ = {isa = PBXBuildFile; fileRef = E12150AE1D4F9D5800F545B6 /* NeuralNetTraining.swift */; };
+		E16670C01D50BCC400B74484 /* NeuralNetView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E16670BF1D50BCC400B74484 /* NeuralNetView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -22,6 +27,11 @@
 		E121509D1D4F893800F545B6 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		E12150A01D4F893800F545B6 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		E12150A21D4F893800F545B6 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		E12150A81D4F896200F545B6 /* Neuron.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Neuron.swift; sourceTree = "<group>"; };
+		E12150AA1D4F89D700F545B6 /* Layer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Layer.swift; sourceTree = "<group>"; };
+		E12150AC1D4F8A8700F545B6 /* NeuralNet.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NeuralNet.swift; sourceTree = "<group>"; };
+		E12150AE1D4F9D5800F545B6 /* NeuralNetTraining.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NeuralNetTraining.swift; sourceTree = "<group>"; };
+		E16670BF1D50BCC400B74484 /* NeuralNetView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NeuralNetView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -60,6 +70,11 @@
 				E121509D1D4F893800F545B6 /* Assets.xcassets */,
 				E121509F1D4F893800F545B6 /* LaunchScreen.storyboard */,
 				E12150A21D4F893800F545B6 /* Info.plist */,
+				E12150A81D4F896200F545B6 /* Neuron.swift */,
+				E12150AA1D4F89D700F545B6 /* Layer.swift */,
+				E12150AC1D4F8A8700F545B6 /* NeuralNet.swift */,
+				E12150AE1D4F9D5800F545B6 /* NeuralNetTraining.swift */,
+				E16670BF1D50BCC400B74484 /* NeuralNetView.swift */,
 			);
 			path = NeuralNetworkDemo;
 			sourceTree = "<group>";
@@ -136,7 +151,12 @@
 			buildActionMask = 2147483647;
 			files = (
 				E12150991D4F893800F545B6 /* ViewController.swift in Sources */,
+				E12150AD1D4F8A8700F545B6 /* NeuralNet.swift in Sources */,
+				E12150AF1D4F9D5800F545B6 /* NeuralNetTraining.swift in Sources */,
+				E12150A91D4F896200F545B6 /* Neuron.swift in Sources */,
 				E12150971D4F893800F545B6 /* AppDelegate.swift in Sources */,
+				E12150AB1D4F89D700F545B6 /* Layer.swift in Sources */,
+				E16670C01D50BCC400B74484 /* NeuralNetView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -288,6 +308,7 @@
 				E12150A71D4F893800F545B6 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};
