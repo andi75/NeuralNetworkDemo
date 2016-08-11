@@ -16,13 +16,9 @@ class NeuralNet
     
     init()
     {
-        self.inputLayer = Layer(neuronCount: 1, inWeightCount: 1, outWeightCount: 1)
-        self.outputLayer = Layer(neuronCount: 1, inWeightCount: 1, outWeightCount: 1)
+        self.inputLayer = Layer()
+        self.outputLayer = Layer()
         self.hiddenLayers = [Layer]()
-        for _ in 0..<1
-        {
-            hiddenLayers.append(Layer(neuronCount: 2, inWeightCount: 2, outWeightCount: 2))
-        }
     }
     
     /** Creates the neural net with the specified numbers of layers and Neurons

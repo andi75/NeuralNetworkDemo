@@ -10,7 +10,7 @@ import Foundation
 
 class NeuralNetTraining
 {
-    enum ExampleType { case SensorExample, TrafficExample }
+    enum ExampleType { case SensorExample, TrafficExample, UniversityExample }
     init(type: ExampleType)
     {
         switch(type)
@@ -28,7 +28,7 @@ class NeuralNetTraining
                 [ 1, 1, 0 ],
                 [ 1, 1, 1 ]
             ]
-            desiredResults = [ 0, 0, 0, 1 ]
+            desiredResults = [ [0], [0], [0], [1] ]
         case .TrafficExample:
             maxEpochCount = 10
             targetError = 0.0001
@@ -45,7 +45,31 @@ class NeuralNetTraining
                 [1.0, 0.43, 0.57, 0.87 ],
                 [1.0, 0.05, 0.06, 0.01 ],
             ]
-            desiredResults = [ 0.80, 0.59, 0.23, 0.45, 0.74, 0.63, 0.10 ]
+            desiredResults = [ [0.80], [0.59], [0.23], [0.45], [0.74], [0.63], [0.10] ]
+        case .UniversityExample:
+            maxEpochCount = 1000
+            targetError = 0.002
+            learningRate = 0.1
+            trainingType = .BACKPROPAGATION
+            activationFunctionType = .SIGLOG
+            // TODO: activationFunctionOutputLayerType = .LINEAR
+            
+            trainSets = [
+                [1.0, 1.0, 0.73],
+                [1.0, 1.0, 0.81],
+                [1.0, 1.0, 0.86],
+                [1.0, 1.0, 0.95],
+                [1.0, 0.0, 0.45],
+                [1.0, 1.0, 0.70],
+                [1.0, 0.0, 0.51],
+                [1.0, 1.0, 0.89],
+                [1.0, 1.0, 0.79],
+                [1.0, 0.0, 0.54]
+            ]
+            desiredResults = [
+                [1.0, 0.0], [1.0, 0.0], [1.0, 0.0], [1.0, 0.0], [1.0, 0.0],
+                [0.0, 1.0], [0.0, 1.0], [0.0, 1.0], [0.0, 1.0], [0.0, 1.0]
+            ]
         }
     }
     
@@ -55,18 +79,35 @@ class NeuralNetTraining
     var meanSquareError = [Double]()
 
     enum ActivationFunctionType { case STEP, LINEAR, SIGLOG, HYPERTAN }
-    enum TrainingType { case PERCEPTRON, ADALINE }
+    enum TrainingType { case PERCEPTRON, ADALINE, BACKPROPAGATION }
     
     var trainingType : TrainingType
     var activationFunctionType : ActivationFunctionType
     
     /** each "Train Set" is an array of Doubles */
     var trainSets : [ [Double] ]?
-    /** each "Train Set" should output the value stored in desiredResults */
-    var desiredResults : [Double]?
+    /** each "Train Set" should output the values stored in desiredResults */
+    var desiredResults : [ [Double] ]?
     
-    /** Trains the neural Network n. This currently assumes that all neurons have only one input weight. Hidden Layers are not supported yet */
+    
     func train(n : NeuralNet)
+    {
+        switch(self.trainingType)
+        {
+        case .ADALINE, .PERCEPTRON:
+            self.trainPerceptronAdaline(n)
+        case .BACKPROPAGATION:
+            self.trainBackpropagation(n)
+        }
+    }
+    
+    func trainBackpropagation(n : NeuralNet)
+    {
+        
+    }
+    
+    /** Trains the neural Network n. This algorithm assumes a single layer network with one output neuron  */
+    func trainPerceptronAdaline(n : NeuralNet)
     {
         self.meanSquareError.removeAll()
         // meanSquareError.removeAll()
@@ -76,7 +117,7 @@ class NeuralNetTraining
             for i in 0..<trainSets!.count
             {
                 let set = self.trainSets![i]
-                let result = desiredResults![i]
+                let result = desiredResults![i][0]
                 
                 let netValue = getNetValue(n, set: set)
                 
@@ -114,7 +155,7 @@ class NeuralNetTraining
         for i in 0..<trainSets!.count
         {
             let set = self.trainSets![i]
-            let result = desiredResults![i]
+            let result = desiredResults![i][0]
             
             let netValue = self.getNetValue(n, set: set)
             let estimatedOutput = self.activationFunction(netValue)
@@ -132,6 +173,10 @@ class NeuralNetTraining
             return oldWeight + self.learningRate * error * trainSample * self.derivativeActivationFunction( netValue )
         case .PERCEPTRON:
             return oldWeight + self.learningRate * error * trainSample
+        case .BACKPROPAGATION:
+            // TODO
+            assert(false)
+            return 0
         }
     }
 

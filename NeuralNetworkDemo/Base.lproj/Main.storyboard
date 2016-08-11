@@ -33,10 +33,11 @@
                                 </connections>
                             </button>
                             <segmentedControl opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="top" segmentControlStyle="plain" selectedSegmentIndex="0" translatesAutoresizingMaskIntoConstraints="NO" id="UL9-9w-emg">
-                                <rect key="frame" x="341" y="28" width="239" height="29"/>
+                                <rect key="frame" x="353" y="28" width="227" height="29"/>
                                 <segments>
                                     <segment title="Sensor"/>
-                                    <segment title="Traffic Prediction"/>
+                                    <segment title="Traffic"/>
+                                    <segment title="University"/>
                                 </segments>
                                 <connections>
                                     <action selector="situationChanged:" destination="BYZ-38-t0r" eventType="valueChanged" id="sPt-nk-8DZ"/>

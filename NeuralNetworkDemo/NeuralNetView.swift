@@ -18,60 +18,167 @@ class NeuralNetView : UIView
     
     override func drawRect(rect: CGRect) {
         let net = self.viewController?.net
-        if(net == nil)
+        if(net == nil) { return }
+        
+        let r = computeRadius(net!)
+        let offsets = computeHorizontalOffsets(net!.hiddenLayers.count, radius: r)
+        
+        // draw each layer
+        var offsetPos : Int = 0
+        drawNetLayer(net!.inputLayer, weightType: .Both, offset: offsets[offsetPos], radius: r)
+        offsetPos += 1
+        
+        var lastLayer = net!.inputLayer
+        for layer in net!.hiddenLayers
         {
-            return
+            connectLayers(lastLayer, rightLayer: layer,
+                          leftOffset: offsets[offsetPos - 1],
+                          rightOffset: offsets[offsetPos],
+                          radius: r)
+            drawNetLayer(layer, weightType: .Both, offset: offsets[offsetPos], radius: r)
+            offsetPos += 1
+            lastLayer = layer
         }
-        else
-        {
-            // count layers
-            let layers = 2 + net!.hiddenLayers.count
-            // count max number of neurons in a single layer
-            var maxNeurons = max(net!.inputLayer.neurons.count, net!.outputLayer.neurons.count)
-            for layer in net!.hiddenLayers
-            {
-                maxNeurons = max(maxNeurons, layer.neurons.count)
-            }
-            // compute circle size
-            let horizontalDiameter = (self.bounds.width - CGFloat(layers + 1) * layerSpacing) / CGFloat(layers)
-            let verticalDiameter = (self.bounds.height - CGFloat(maxNeurons + 1) * neuronSpacing) / CGFloat(maxNeurons)
-            let r = min(horizontalDiameter, verticalDiameter) / 2.0
-            // draw each layer
-            var offset = layerSpacing
-            drawNetLayer(net!.inputLayer, weightType: .InputWeight, offset: offset, radius: r)
-            for layer in net!.hiddenLayers
-            {
-                offset += 2 * r + layerSpacing
-                drawNetLayer(layer, weightType: .InputWeight, offset: offset, radius: r)
-            }
-            offset += 2 * r + layerSpacing
-            drawNetLayer(net!.outputLayer, weightType: .OutputWeight, offset: offset, radius: r)
-        }
+        connectLayers(lastLayer, rightLayer: net!.outputLayer,
+                      leftOffset: offsets[offsetPos - 1],
+                      rightOffset: offsets[offsetPos],
+                      radius: r)
+        drawNetLayer(net!.outputLayer, weightType: .Both, offset: offsets[offsetPos], radius: r)
     }
     
-    enum WeightType { case InputWeight, OutputWeight }
+    func computeRadius(net : NeuralNet) -> CGFloat
+    {
+        // count layers
+        let layers = 2 + net.hiddenLayers.count
+        // count max number of neurons in a single layer
+        var maxNeurons = max(net.inputLayer.neurons.count, net.outputLayer.neurons.count)
+        for layer in net.hiddenLayers
+        {
+            maxNeurons = max(maxNeurons, layer.neurons.count)
+        }
+        // compute circle size
+        let horizontalDiameter = (self.bounds.width - CGFloat(layers + 1) * layerSpacing) / CGFloat(layers)
+        let verticalDiameter = (self.bounds.height - CGFloat(maxNeurons + 1) * neuronSpacing) / CGFloat(maxNeurons)
+        let r = min(horizontalDiameter, verticalDiameter) / 2.0
+        return r
+    }
     
+    func computeHorizontalOffsets(hiddenLayerCount : Int, radius: CGFloat) -> [CGFloat]
+    {
+        var offsets = [CGFloat]()
+        var offset = self.layerSpacing
+        // inputLayer
+        offsets.append(offset)
+        // hiddenLayers
+        for _ in 0..<hiddenLayerCount
+        {
+            offset += 2 * radius + layerSpacing
+            offsets.append(offset)
+        }
+        // outputLayer
+        offset += 2 * radius + layerSpacing
+        offsets.append(offset)
+        return offsets
+    }
+    
+    enum WeightType { case InputWeight, OutputWeight, Both }
+    
+    func drawSingleWeights(weights : [Double], rect: CGRect)
+    {
+        var weightString = ""
+        for i in 0..<weights.count
+        {
+            weightString = String.localizedStringWithFormat("%@%.2f", weightString, weights[i])
+            // insert \n delimiter between weights, but don't add one after the last weight, or the text won't align propertly vertically
+            if(i != weights.count - 1)
+            {
+                weightString = String.localizedStringWithFormat("%@\n", weightString)
+            }
+        }
+        
+        // weightString.drawWithRect( CGRectInset(rect, radius / 2, radius / 2), options: .UsesLineFragmentOrigin, attributes: nil, context: nil )
+        NeuralNetView.drawString(weightString, font: UIFont.systemFontOfSize(UIFont.systemFontSize()), rect: rect)
+    }
+    
+    func computeVerticalOffsets(layer : Layer, radius: CGFloat) -> [CGFloat]
+    {
+        var vOffsets = [CGFloat]()
+        
+        var vOffset = (self.bounds.height - 2 * radius * CGFloat(layer.neurons.count) - CGFloat(layer.neurons.count - 1) * self.neuronSpacing) / 2
+        for _ in layer.neurons
+        {
+            vOffsets.append(vOffset)
+            vOffset += (2 * radius + self.neuronSpacing)
+        }
+        return vOffsets
+    }
+    
+    func connectLayers(leftLayer : Layer, rightLayer : Layer,
+                       leftOffset: CGFloat, rightOffset: CGFloat,
+                       radius: CGFloat)
+    {
+        let ctx = UIGraphicsGetCurrentContext()
+
+        let vOffsetsLeft = computeVerticalOffsets(leftLayer, radius: radius)
+        let vOffsetsRight = computeVerticalOffsets(rightLayer, radius: radius)
+
+        var rightSkip = 0
+        for i in 0..<leftLayer.neurons.count
+        {
+            // TODO: fix connections for output layer
+            while( (i + rightSkip) < rightLayer.neurons.count &&
+                rightLayer.neurons[i + rightSkip].weightsIn.count == 0)
+            {
+                rightSkip += 1
+            }
+            let y1 = vOffsetsLeft[i]
+            let y2 = vOffsetsRight[i + rightSkip]
+            let r1 = CGRectMake(leftOffset, y1, 2 * radius, 2 * radius)
+            let r2 = CGRectMake(rightOffset, y2, 2 * radius, 2 * radius)
+
+            let points = [
+                CGPointMake(CGRectGetMidX(r1), CGRectGetMidY(r1)),
+                CGPointMake(CGRectGetMidX(r2), CGRectGetMidY(r2))
+            ]
+            CGContextStrokeLineSegments(ctx, points, 2)
+        }
+    }
+
     func drawNetLayer(layer : Layer, weightType : WeightType, offset: CGFloat, radius: CGFloat)
     {
         let ctx = UIGraphicsGetCurrentContext()
         // draw circles for each neuron
-        var vOffset = (self.bounds.height - 2 * radius * CGFloat(layer.neurons.count) - CGFloat(layer.neurons.count - 1) * neuronSpacing) / 2
-        for neuron in layer.neurons
+        let vOffsets = computeVerticalOffsets(layer, radius: radius)
+        
+        for i in 0..<layer.neurons.count
         {
+            let neuron = layer.neurons[i]
+            let vOffset = vOffsets[i]
+            
             let rect = CGRectMake(offset, vOffset, 2 * radius, 2 * radius)
             CGContextStrokeEllipseInRect(ctx, rect)
             
-            let weight : Double
             switch(weightType)
             {
-            case .InputWeight: weight = neuron.weightsIn[0]
-            case .OutputWeight: weight = neuron.weightsOut[0]
+            case .InputWeight:
+                drawSingleWeights(neuron.weightsIn, rect: CGRectInset(rect, radius / 2, radius / 2))
+            case .OutputWeight:
+                drawSingleWeights(neuron.weightsOut, rect: CGRectInset(rect, radius / 2, radius / 2))
+            case .Both:
+                let r1 = CGRectMake(
+                    rect.origin.x + rect.width * 1 / 8,
+                    rect.origin.y + rect.height / 3,
+                    radius / 3, rect.height / 3
+                )
+                let r2 = CGRectMake(
+                    rect.origin.x + rect.width * 5 / 8,
+                    rect.origin.y + rect.height / 3,
+                    radius / 3, rect.height / 3
+                )
+                drawSingleWeights(neuron.weightsIn, rect: r1)
+                drawSingleWeights(neuron.weightsOut, rect: r2)
+                break
             }
-            let weightString : String = String.localizedStringWithFormat("%.2f", weight)
-            
-            // weightString.drawWithRect( CGRectInset(rect, radius / 2, radius / 2), options: .UsesLineFragmentOrigin, attributes: nil, context: nil )
-            NeuralNetView.drawString(weightString, font: UIFont.systemFontOfSize(UIFont.systemFontSize()), rect: CGRectInset(rect, radius / 2, radius / 2))
-            vOffset += (2 * radius + neuronSpacing)
         }
     }
     
