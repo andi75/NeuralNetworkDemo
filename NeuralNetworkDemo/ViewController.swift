@@ -19,7 +19,7 @@ class ViewController: UIViewController {
         switch(situationChooser.selectedSegmentIndex)
         {
         case 0:
-            self.net = NeuralNet(numberOfInputNeurons: 3 /* bias plus two neurons */, numberOfHiddenLayers: 0, numberOfNeuronsInHiddenLayer: 0, numberOfOutputNeurons: 1)
+            self.net = createANDNet()
         case 1:
             self.net = NeuralNet(numberOfInputNeurons: 4 /* bias plus three neurons */, numberOfHiddenLayers: 0, numberOfNeuronsInHiddenLayer: 0, numberOfOutputNeurons: 1)
         case 2:
@@ -31,6 +31,22 @@ class ViewController: UIViewController {
         }
         self.net!.print()
         self.neuralNetView.setNeedsDisplay()
+    }
+    
+    func createANDNet() -> NeuralNet
+    {
+        let n = NeuralNet()
+        n.inputLayer.neurons.append( Neuron(inWeightCount: 0, outWeightCount: 1) )
+        n.inputLayer.neurons.append( Neuron(inWeightCount: 1, outWeightCount: 1 ) )
+        n.inputLayer.neurons.append( Neuron(inWeightCount: 1, outWeightCount: 1 ) )
+        n.outputLayer.neurons.append( Neuron(inWeightCount: 3, outWeightCount: 0) )
+        return n
+    }
+    
+    func createTrafficNet() -> NeuralNet
+    {
+        let n = NeuralNet()
+        return n
     }
     
     func createUniversityNet() -> NeuralNet
@@ -50,8 +66,8 @@ class ViewController: UIViewController {
         n.hiddenLayers[0].neurons.append( Neuron(inWeightCount: 3, outWeightCount: 2) )
         n.hiddenLayers[0].neurons.append( Neuron(inWeightCount: 3, outWeightCount: 2) )
         
-        n.outputLayer.neurons.append( Neuron(inWeightCount: 2, outWeightCount: 0) )
-        n.outputLayer.neurons.append( Neuron(inWeightCount: 2, outWeightCount: 0) )
+        n.outputLayer.neurons.append( Neuron(inWeightCount: 4, outWeightCount: 0) )
+        n.outputLayer.neurons.append( Neuron(inWeightCount: 4, outWeightCount: 0) )
         
         return n
     }

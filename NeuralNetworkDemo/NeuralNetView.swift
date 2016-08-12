@@ -81,7 +81,7 @@ class NeuralNetView : UIView
         return offsets
     }
     
-    enum WeightType { case InputWeight, OutputWeight, Both }
+    enum WeightType { case InputWeight, OutputWeight, Both, None }
     
     func drawSingleWeights(weights : [Double], rect: CGRect)
     {
@@ -100,14 +100,31 @@ class NeuralNetView : UIView
         NeuralNetView.drawString(weightString, font: UIFont.systemFontOfSize(UIFont.systemFontSize()), rect: rect)
     }
     
-    func computeVerticalOffsets(layer : Layer, radius: CGFloat) -> [CGFloat]
+    func computeVerticalOffsets(layer : Layer, weightType: WeightType, radius: CGFloat) -> [CGFloat]
     {
         var vOffsets = [CGFloat]()
         
         var vOffset = (self.bounds.height - 2 * radius * CGFloat(layer.neurons.count) - CGFloat(layer.neurons.count - 1) * self.neuronSpacing) / 2
-        for _ in layer.neurons
+        for neuron in layer.neurons
         {
-            vOffsets.append(vOffset)
+            switch(weightType)
+            {
+            case .InputWeight:
+                for _ in neuron.weightsIn
+                {
+                    vOffsets.append(vOffset)
+                }
+            case .OutputWeight:
+                for _ in neuron.weightsOut
+                {
+                    vOffsets.append(vOffset)
+                }
+            case .None:
+                vOffsets.append(vOffset)
+                
+            case .Both:
+                assert(false)
+            }
             vOffset += (2 * radius + self.neuronSpacing)
         }
         return vOffsets
@@ -119,20 +136,15 @@ class NeuralNetView : UIView
     {
         let ctx = UIGraphicsGetCurrentContext()
 
-        let vOffsetsLeft = computeVerticalOffsets(leftLayer, radius: radius)
-        let vOffsetsRight = computeVerticalOffsets(rightLayer, radius: radius)
-
-        var rightSkip = 0
-        for i in 0..<leftLayer.neurons.count
+        let vOffsetsLeft = computeVerticalOffsets(leftLayer, weightType: .OutputWeight, radius: radius)
+        let vOffsetsRight = computeVerticalOffsets(rightLayer, weightType: .InputWeight, radius: radius)
+        
+        assert(vOffsetsLeft.count == vOffsetsRight.count)
+        
+        for i in 0..<vOffsetsLeft.count
         {
-            // TODO: fix connections for output layer
-            while( (i + rightSkip) < rightLayer.neurons.count &&
-                rightLayer.neurons[i + rightSkip].weightsIn.count == 0)
-            {
-                rightSkip += 1
-            }
             let y1 = vOffsetsLeft[i]
-            let y2 = vOffsetsRight[i + rightSkip]
+            let y2 = vOffsetsRight[i]
             let r1 = CGRectMake(leftOffset, y1, 2 * radius, 2 * radius)
             let r2 = CGRectMake(rightOffset, y2, 2 * radius, 2 * radius)
 
@@ -140,7 +152,15 @@ class NeuralNetView : UIView
                 CGPointMake(CGRectGetMidX(r1), CGRectGetMidY(r1)),
                 CGPointMake(CGRectGetMidX(r2), CGRectGetMidY(r2))
             ]
-            CGContextStrokeLineSegments(ctx, points, 2)
+            let dx = points[1].x - points[0].x
+            let dy = points[1].y - points[0].y
+            
+            let l = sqrt(dx * dx + dy * dy)
+            let circlePoints = [
+                    CGPointMake(points[0].x + dx * radius / l, points[0].y + dy * radius / l),
+                    CGPointMake(points[1].x - dx * radius / l, points[1].y - dy * radius / l),
+            ]
+            CGContextStrokeLineSegments(ctx, circlePoints, 2)
         }
     }
 
@@ -148,7 +168,7 @@ class NeuralNetView : UIView
     {
         let ctx = UIGraphicsGetCurrentContext()
         // draw circles for each neuron
-        let vOffsets = computeVerticalOffsets(layer, radius: radius)
+        let vOffsets = computeVerticalOffsets(layer, weightType: .None, radius: radius)
         
         for i in 0..<layer.neurons.count
         {
@@ -177,6 +197,9 @@ class NeuralNetView : UIView
                 )
                 drawSingleWeights(neuron.weightsIn, rect: r1)
                 drawSingleWeights(neuron.weightsOut, rect: r2)
+                break
+            case .None:
+                assert(false)
                 break
             }
         }
